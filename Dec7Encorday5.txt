@@ -74,7 +74,7 @@ GI3:103.5                        GI3:103.6
              HSRPIP:  103.7
           use standby 3 and track 3
 
-R11:PrimaryInt:
+R11:PrimaryInt: LALABAS SA ENCOR
 config t
 Int gi 2
 standby version 2
