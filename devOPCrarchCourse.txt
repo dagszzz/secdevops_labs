@@ -12,7 +12,7 @@ enableLinuxdockersinCSR1000v
 config t
 iox
 interface GigabitEthernet1
-ip address dhcp
+!!ip address dhcp
 ip nat outside
 no shut
 exit
@@ -36,7 +36,16 @@ app-hosting appid guestshell
    memory 512
 end
 
-UNANGTELNET:  guestshell enable
+
+repo_file=/etc/yum.repos.d/CentOS-Base.repo
+cp ${repo_file} ~/CentOS-Base.repo.backup
+sudo sed -i s/#baseurl/baseurl/ ${repo_file}
+sudo sed -i s/mirrorlist.centos.org/vault.centos.org/ ${repo_file}
+sudo sed -i s/mirror.centos.org/vault.centos.org/ ${repo_file}
+sudo yum clean all
+
+
+UNANGTELNET:  guestshell enable / guestshell destroy !!disable docker
 2NDtELNET:    guestshell run python
 THIRDTELNET:  guestshell run bash
 
