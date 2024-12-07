@@ -103,7 +103,7 @@ standby 2 preempt
 standby 2 Priority 90
 END
 
-CONFIGURE REAL IP SLA: Service level agreement:
+CONFIGURE REAL IP SLA: Service level agreement: LALABAS SA ENCOR
 @R1: PrimaryInt
 config t
 ip sla 1 
