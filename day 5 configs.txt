@@ -1,0 +1,106 @@
+config t
+flow exporter Export-R1Flow
+ !destination 10.10.1.10
+ destination 192.168.102.1
+ source Loopback2
+ transport udp 2055
+!
+flow monitor Monitor-R1Flow
+ exporter Export-R1Flow
+ cache timeout inactive 30
+ cache timeout active 300
+ record netflow ipv4 original-input
+!
+interface loopback2
+ ip address 2.2.2.2 255.255.255.255
+!
+!interface Ethernet0/0
+interface gi 2
+ !ip address 10.10.1.2 255.255.255.0
+  ip add 192.168.102.12 255.255.255.0
+ ip ospf network point-to-point
+!
+router ospf 10
+ router-id 2.2.2.2
+ network 2.2.2.2 0.0.0.0 area 0
+ network 10.10.1.0 0.0.0.255 area 0
+
+
+Task 1. Enable Flexible NetFlow on R1 E0/0 [gi 2] in both directions using the pre-configured flow monitor.
+
+On R1:
+
+config t
+!interface e0/0
+interface gi 2
+ ip flow monitor Monitor-R1Flow input
+ ip flow monitor Monitor-R1Flow output
+
+
+CCNP ENCOR Theory: CM-PM-SP
+
+Control Plane Policing: Control Data entering Cisco Devices
+allowed: icmp,telnet[23], ssh[22], https[443]
+task 1: make a COPP to prevent large pings
+
+conf t
+ip access-list extended 100
+permit icmp any any
+class-map nopinglaki
+match access-group 100
+policy-map stopbigping
+class nopinglaki
+police 8000 conform-action transmit exceed-action drop
+exit
+control-plane
+service-policy input stopbigping
+end
+show policy-map control-plane
+
+how to remove
+conf t
+control-plane
+no service-policy input stopbigping
+
+
+
+Task 2: ssh okay, telnet bw reduced, remove icmp
+
+config t
+ip access-list extended SSH
+permit tcp any any eq 22
+ip access-list extended TELNET
+permit tcp any any eq 23
+ip access-list extended ICMP
+deny icmp any any
+
+!!create class-map
+class-map match-all CMTEL
+match access-group TELNET
+class-map match-all CMSSH
+match access-group SSH
+class-map match-all CMICMP
+match access-group ICMP
+!!create policy-map
+policy-map PMCOPP
+class CMTEL
+police 8000 conform-action transmit exceed-action drop
+class CMSSH
+police 500000 conform-action transmit exceed-action transmit
+class CMICMP
+police rate 4 pps conform-action transmit exceed-action drop
+class class-default 
+police 12000 conform-action transmit exceed-action transmit
+!!Service-policy
+control-plane
+service-policy input PMCOPP
+end
+
+
+conf t
+no monitor session 11
+monitor session 11 source interface FA 0/5,fa0/7,fa0/2,fa0/6,fa0/8 both
+monitor session 11 destination interface fa 0/1
+end
+!
+no monitor session 11
